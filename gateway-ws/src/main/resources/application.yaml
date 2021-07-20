@@ -26,17 +26,19 @@ spring:
       discovery:
         locator:
           lower-case-service-id: true
+  devtools:
+    restart:
+      enabled: true
 
 eureka:
   client:
     service-url:
       defaultZone: http://localhost:8010/eureka
-
 management:
   endpoints:
     web:
       exposure:
-        exclude: '*'
+        include: "*"
 info:
   app:
     name: @project.artifactId@
