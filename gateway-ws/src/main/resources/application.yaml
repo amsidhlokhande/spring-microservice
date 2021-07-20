@@ -9,13 +9,20 @@ spring:
       - id: userModule
         uri: lb://users-ws
         predicates:
-        - Path=/users/**
+        - Path=/users-ws/users/**
         - Method=GET,PUT,POST
+        filters:
+        - RemoveRequestHeader=Cookie
+        - RewritePath=/users-ws/(?<segment>.*), /$\{segment}
+
       - id: accountsModule
         uri: lb://accounts-ws
         predicates:
-        - Path=/accounts/**
+        - Path=/accounts-ws/accounts/**
         - Method=GET,PUT,POST
+        filters:
+        - RemoveRequestHeader=Cookie
+        - RewritePath=/accounts-ws/(?<segment>.*), /$\{segment}
       discovery:
         locator:
           lower-case-service-id: true
@@ -24,3 +31,17 @@ eureka:
   client:
     service-url:
       defaultZone: http://localhost:8010/eureka
+
+management:
+  endpoints:
+    web:
+      exposure:
+        exclude: '*'
+info:
+  app:
+    name: @project.artifactId@
+    version: @project.version@
+    encoding: @project.build.sourceEncoding@
+    java:
+      source: @java.version@
+      target: @java.version@

@@ -6,6 +6,7 @@ import com.amsidh.mvc.usermicroservice.ui.request.UserUpdateRequestModel;
 import com.amsidh.mvc.usermicroservice.ui.response.UserResponseModel;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,10 +26,11 @@ import static org.springframework.http.ResponseEntity.*;
 public class UserController {
 
     private final UserService userService;
+    private final Environment environment;
 
     @GetMapping("/status/check")
     public String statusCheck() {
-        return "Users Microservice is Working...";
+        return "Users Microservice is Working on port "+ environment.getProperty("local.server.port");
     }
 
     @GetMapping(path = {"/{userId}"}, produces = {APPLICATION_JSON_VALUE, APPLICATION_XML_VALUE})
