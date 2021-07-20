@@ -9,7 +9,7 @@ spring:
       - id: userModule
         uri: lb://users-ws
         predicates:
-        - Path=/users-ws/users/**
+        - Path=/users-ws/**
         - Method=GET,PUT,POST
         filters:
         - RemoveRequestHeader=Cookie
@@ -18,7 +18,7 @@ spring:
       - id: accountsModule
         uri: lb://accounts-ws
         predicates:
-        - Path=/accounts-ws/accounts/**
+        - Path=/accounts-ws/**
         - Method=GET,PUT,POST
         filters:
         - RemoveRequestHeader=Cookie

@@ -1,12 +1,15 @@
 package com.amsidh.mvc.usermicroservice.service.impl;
 
+import com.amsidh.mvc.usermicroservice.entity.UserEntity;
 import com.amsidh.mvc.usermicroservice.exception.UserException;
+import com.amsidh.mvc.usermicroservice.repository.UserRepository;
 import com.amsidh.mvc.usermicroservice.service.UserService;
 import com.amsidh.mvc.usermicroservice.shared.UserMapper;
 import com.amsidh.mvc.usermicroservice.shared.Utils;
 import com.amsidh.mvc.usermicroservice.ui.request.UserRequestModel;
 import com.amsidh.mvc.usermicroservice.ui.request.UserUpdateRequestModel;
 import com.amsidh.mvc.usermicroservice.ui.response.UserResponseModel;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import static java.util.Optional.ofNullable;
 
@@ -22,31 +26,27 @@ import static java.util.Optional.ofNullable;
 @Slf4j
 @Service
 public class UserServiceImpl implements UserService {
-    private static final Map<String, UserRequestModel> users = new HashMap<>();
     private final Utils utils;
     private final UserMapper userMapper;
-
-    static {
-        log.info("Loading default data......");
-        String userId = UUID.randomUUID().toString();
-        users.put(userId, new UserRequestModel(userId, "Anjali", "Lokhande", "test@gmail.com", "pass1234"));
-    }
+    private final UserRepository userRepository;
+    private final ObjectMapper objectMapper;
 
     @Override
     public UserResponseModel createUser(UserRequestModel userRequestModel) {
         log.debug("createUser method of UserServiceImpl is called");
-        String userId = utils.generateUUID();
-        userRequestModel.setUserId(userId);
-        users.put(userId, userRequestModel);
+        userRequestModel.setUserId(utils.generateUUID());
+        UserEntity userEntity = objectMapper.convertValue(userRequestModel, UserEntity.class);
+        userEntity.setEncryptedPassword("testPassword");
+        UserEntity savedUserEntity = userRepository.save(userEntity);
         log.info("User created successfully!!!");
-        return userMapper.userResponseModel(userRequestModel);
+        return objectMapper.convertValue(savedUserEntity, UserResponseModel.class);
     }
 
     @Override
     public UserResponseModel getUserByUserId(String userId) {
         log.info("getUserByUserId method of UserServiceImpl is called");
         Objects.requireNonNull(userId, "UserId must not be null");
-        return ofNullable(users.get(userId)).map(userMapper::userResponseModel)
+        return ofNullable(userRepository.findByUserId(userId)).map(userEntity -> objectMapper.convertValue(userEntity, UserResponseModel.class))
                 .orElseThrow(() -> new UserException(String.format("User with userId %s not found", userId)));
     }
 
@@ -54,25 +54,28 @@ public class UserServiceImpl implements UserService {
     public UserResponseModel updateUser(String userId, UserUpdateRequestModel userUpdateRequestModel) {
         log.info("updateUser method of UserServiceImpl is called");
         Objects.requireNonNull(userId, "UserId must not be null");
-        return ofNullable(users.get(userId)).map(existingUserRequestModel -> {
-            ofNullable(userUpdateRequestModel.getFirstName()).ifPresent(existingUserRequestModel::setFirstName);
-            ofNullable(userUpdateRequestModel.getLastName()).ifPresent(existingUserRequestModel::setLastName);
-            return userMapper.userResponseModel(existingUserRequestModel);
+        return ofNullable(userRepository.findByUserId(userId)).map(userEntity -> {
+            ofNullable(userUpdateRequestModel.getFirstName()).ifPresent(userEntity::setFirstName);
+            ofNullable(userUpdateRequestModel.getLastName()).ifPresent(userEntity::setLastName);
+            userRepository.save(userEntity);
+            return objectMapper.convertValue(userEntity, UserResponseModel.class);
         }).orElseThrow(() -> new RuntimeException(String.format("User with userId %s not found.", userId)));
     }
 
     @Override
     public void deleteUser(String userId) {
         Objects.requireNonNull(userId, "UserId must not be null");
-        UserRequestModel userRequestModel = users.remove(userId);
-        if (userRequestModel == null) {
-            throw new RuntimeException(String.format("User with userId %s not found.", userId));
-        }
+        Optional.ofNullable(userRepository.findByUserId(userId)).map(userEntity -> {
+            userRepository.delete(userEntity);
+            return objectMapper.convertValue(userEntity, UserResponseModel.class);
+        }).orElseThrow(() -> new RuntimeException(String.format("User with userId %s not found.", userId)));
 
     }
 
     @Override
     public List<UserResponseModel> getAllUsers() {
-        return users.values().stream().map(userMapper::userResponseModel).collect(Collectors.toList());
+        Iterator<UserEntity> iterator = userRepository.findAll().iterator();
+        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED), false).map(userEntity -> objectMapper.convertValue(userEntity, UserResponseModel.class))
+                .collect(Collectors.toList());
     }
 }
