@@ -128,7 +128,7 @@ spring.cloud.gateway.routes[1].predicates[0] = Weight=group1, 2
 This route would forward ~80% of traffic to weighthigh.org and ~20% of traffic to weighlow.org
 
 
-#Gateway Filters
+# Gateway Filters
 A list of API Gateway filters is very long to be included in a single lecture. Below are direct links to gateway filters published in Spring Cloud API Gateway documentation.
 
 - GatewayFilter Factories
