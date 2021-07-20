@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -30,13 +31,14 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final UserRepository userRepository;
     private final ObjectMapper objectMapper;
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Override
     public UserResponseModel createUser(UserRequestModel userRequestModel) {
         log.debug("createUser method of UserServiceImpl is called");
         userRequestModel.setUserId(utils.generateUUID());
         UserEntity userEntity = objectMapper.convertValue(userRequestModel, UserEntity.class);
-        userEntity.setEncryptedPassword("testPassword");
+        userEntity.setEncryptedPassword(bCryptPasswordEncoder.encode(userRequestModel.getPassword()));
         UserEntity savedUserEntity = userRepository.save(userEntity);
         log.info("User created successfully!!!");
         return objectMapper.convertValue(savedUserEntity, UserResponseModel.class);
