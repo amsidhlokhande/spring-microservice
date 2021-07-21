@@ -61,26 +61,14 @@ spring:
   devtools:
     restart:
       enabled: true
+  config:
+    import: optional:configserver:http://localhost:8888
 
 eureka:
   client:
     service-url:
       defaultZone: http://localhost:8010/eureka
-management:
-  endpoints:
-    web:
-      exposure:
-        include: "*"
-info:
-  app:
-    name: @project.artifactId@
-    version: @project.version@
-    encoding: @project.build.sourceEncoding@
-    java:
-      source: @java.version@
-      target: @java.version@
 
-
-jwt:
-  secret:
-    salt: kjv7idh68jfd7bd7v68v6avv%v9$v78#vkdfshg
+#jwt:
+#  secret:
+#    salt: kjv7idh68jfd7bd7v68v6avv%v9$v78#vkdfshg
