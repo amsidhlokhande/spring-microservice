@@ -3,6 +3,8 @@ package com.amsidh.mvc.usermicroservice.config;
 import com.amsidh.mvc.usermicroservice.service.UserService;
 import com.amsidh.mvc.usermicroservice.ui.request.UserLoginModel;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.core.env.Environment;
@@ -19,13 +21,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 
 @RequiredArgsConstructor
 public class AuthFilter extends UsernamePasswordAuthenticationFilter {
 
     private final UserService userService;
     private final Environment environment;
-    private final AuthenticationManager authenticationManager;
 
     @SneakyThrows
     @Override
@@ -36,9 +38,15 @@ public class AuthFilter extends UsernamePasswordAuthenticationFilter {
 
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
-        String  emailId = ((User)authResult.getPrincipal()).getUsername();
+        String emailId = ((User) authResult.getPrincipal()).getUsername();
         String userId = userService.getUserIdByEmailId(emailId);
 
-
+        String jwtToken = Jwts.builder()
+                .setSubject(userId)
+                .setExpiration(new Date(System.currentTimeMillis() + Long.parseLong(environment.getProperty("token.expiration.time.in.millisecond"))))
+                .signWith(SignatureAlgorithm.HS512, environment.getProperty("jwt.secret.salt"))
+                .compact();
+        response.addHeader("token", jwtToken);
+        response.addHeader("userId",userId);
     }
 }
