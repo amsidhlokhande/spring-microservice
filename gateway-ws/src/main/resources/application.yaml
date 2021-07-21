@@ -32,6 +32,7 @@ spring:
           - Header=Authorization, Bearer (.*)
           filters:
           - RemoveRequestHeader=Cookie
+          - JwtTokenValidationFilter
           - RewritePath=/users-ws/(?<segment>.*), /$\{segment}
 
         - id: users-ws-put-delete
@@ -42,6 +43,7 @@ spring:
           - Header=Authorization, Bearer (.*)
           filters:
           - RemoveRequestHeader=Cookie
+          - JwtTokenValidationFilter
           - RewritePath=/users-ws/(?<segment>.*), /$\{segment}
 
         - id: accountsModule
@@ -52,7 +54,6 @@ spring:
           filters:
           - RemoveRequestHeader=Cookie
           - RewritePath=/accounts-ws/(?<segment>.*), /$\{segment}
-
 
       discovery:
         locator:
