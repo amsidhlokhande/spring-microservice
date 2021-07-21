@@ -9,8 +9,9 @@ spring:
       - id: userModule
         uri: lb://users-ws
         predicates:
-        - Path=/users-ws/**
-        - Method=GET,PUT,POST
+        - Path=/users-ws/users/status/check
+        - Method=GET
+        - Header=Authorization, Bearer (.*)
         filters:
         - RemoveRequestHeader=Cookie
         - RewritePath=/users-ws/(?<segment>.*), /$\{segment}
