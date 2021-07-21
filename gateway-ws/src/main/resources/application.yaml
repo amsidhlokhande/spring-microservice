@@ -6,33 +6,54 @@ spring:
   cloud:
     gateway:
       routes:
-      - id: userGetUserStatusModule
-        uri: lb://users-ws
-        predicates:
-        - Path=/users-ws/users/status/check
-        - Method=GET
-        - Header=Authorization, Bearer (.*)
-        filters:
-        - RemoveRequestHeader=Cookie
-        - RewritePath=/users-ws/(?<segment>.*), /$\{segment}
-
-      - id: userModule
-        uri: lb://users-ws
-        predicates:
-          - Path=/users-ws/**
-          - Method=POST,PUT
-        filters:
+        - id: users-ws-login
+          uri: lb://users-ws
+          predicates:
+          - Path=/users-ws/users/login
+          - Method=POST
+          filters:
           - RemoveRequestHeader=Cookie
           - RewritePath=/users-ws/(?<segment>.*), /$\{segment}
 
-      - id: accountsModule
-        uri: lb://accounts-ws
-        predicates:
-        - Path=/accounts-ws/**
-        - Method=GET,PUT,POST
-        filters:
-        - RemoveRequestHeader=Cookie
-        - RewritePath=/accounts-ws/(?<segment>.*), /$\{segment}
+        - id: users-ws-create
+          uri: lb://users-ws
+          predicates:
+          - Path=/users-ws/users
+          - Method=POST
+          filters:
+          - RemoveRequestHeader=Cookie
+          - RewritePath=/users-ws/(?<segment>.*), /$\{segment}
+
+        - id: users-ws-status-check
+          uri: lb://users-ws
+          predicates:
+          - Path=/users-ws/users/status/check
+          - Method=GET
+          - Header=Authorization, Bearer (.*)
+          filters:
+          - RemoveRequestHeader=Cookie
+          - RewritePath=/users-ws/(?<segment>.*), /$\{segment}
+
+        - id: users-ws-put-delete
+          uri: lb://users-ws
+          predicates:
+          - Path=/users-ws/users/**
+          - Method=GET,PUT,DELETE
+          - Header=Authorization, Bearer (.*)
+          filters:
+          - RemoveRequestHeader=Cookie
+          - RewritePath=/users-ws/(?<segment>.*), /$\{segment}
+
+        - id: accountsModule
+          uri: lb://accounts-ws
+          predicates:
+          - Path=/accounts-ws/**
+          - Method=GET,PUT,POST
+          filters:
+          - RemoveRequestHeader=Cookie
+          - RewritePath=/accounts-ws/(?<segment>.*), /$\{segment}
+
+
       discovery:
         locator:
           lower-case-service-id: true
