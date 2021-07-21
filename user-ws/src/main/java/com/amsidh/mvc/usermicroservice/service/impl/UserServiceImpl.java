@@ -13,6 +13,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -79,5 +82,12 @@ public class UserServiceImpl implements UserService {
         Iterator<UserEntity> iterator = userRepository.findAll().iterator();
         return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED), false).map(userEntity -> objectMapper.convertValue(userEntity, UserResponseModel.class))
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String emailId) throws UsernameNotFoundException {
+        UserEntity userEntity = userRepository.findByEmailId(emailId);
+        Objects.requireNonNull(userEntity, String.format("No user with emailId %s found", emailId));
+        return new User(userEntity.getEmailId(), userEntity.getEncryptedPassword(), true, true, true, true, new ArrayList<>());
     }
 }
