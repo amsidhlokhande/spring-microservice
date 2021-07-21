@@ -79,3 +79,8 @@ info:
     java:
       source: @java.version@
       target: @java.version@
+
+
+jwt:
+  secret:
+    salt: kjv7idh68jfd7bd7v68v6avv%v9$v78#vkdfshg
