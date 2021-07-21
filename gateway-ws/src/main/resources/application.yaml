@@ -6,7 +6,7 @@ spring:
   cloud:
     gateway:
       routes:
-      - id: userModule
+      - id: userGetUserStatusModule
         uri: lb://users-ws
         predicates:
         - Path=/users-ws/users/status/check
@@ -15,6 +15,15 @@ spring:
         filters:
         - RemoveRequestHeader=Cookie
         - RewritePath=/users-ws/(?<segment>.*), /$\{segment}
+
+      - id: userModule
+        uri: lb://users-ws
+        predicates:
+          - Path=/users-ws/**
+          - Method=POST,PUT
+        filters:
+          - RemoveRequestHeader=Cookie
+          - RewritePath=/users-ws/(?<segment>.*), /$\{segment}
 
       - id: accountsModule
         uri: lb://accounts-ws
