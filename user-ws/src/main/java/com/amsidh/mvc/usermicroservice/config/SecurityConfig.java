@@ -36,8 +36,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     private AuthFilter getAuthenticationFilter() throws Exception {
-        AuthFilter authFilter = new AuthFilter();
-        authFilter.setAuthenticationManager(authenticationManager());
+        AuthFilter authFilter = new AuthFilter(userService,environment,authenticationManager());
         return authFilter;
     }
 

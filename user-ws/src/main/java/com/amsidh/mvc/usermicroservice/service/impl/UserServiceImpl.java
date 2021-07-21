@@ -90,4 +90,10 @@ public class UserServiceImpl implements UserService {
         Objects.requireNonNull(userEntity, String.format("No user with emailId %s found", emailId));
         return new User(userEntity.getEmailId(), userEntity.getEncryptedPassword(), true, true, true, true, new ArrayList<>());
     }
+
+    @Override
+    public String getUserIdByEmailId(String emailId) {
+        UserEntity userEntity = userRepository.findByEmailId(emailId);
+       return Optional.ofNullable(userEntity).map(UserEntity::getUserId).orElseThrow(()-> new RuntimeException(String.format("No user with emailId %s found", emailId)));
+    }
 }
