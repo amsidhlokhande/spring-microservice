@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
+import java.util.Objects;
 import java.util.Optional;
 
 @Component
@@ -29,12 +30,12 @@ public class JwtTokenValidationFilter extends AbstractGatewayFilterFactory<JwtTo
         return (exchange, chain) -> {
             ServerHttpRequest httpRequest = exchange.getRequest();
             if (!httpRequest.getHeaders().containsKey(HttpHeaders.AUTHORIZATION)) {
-                return onError(exchange, "Request does not contain Authorization header", HttpStatus.UNAUTHORIZED);
+                return onError(exchange, "Request does not contain Authorization header");
             }
-            String authorizationHeader = httpRequest.getHeaders().get(HttpHeaders.AUTHORIZATION).get(0);
+            String authorizationHeader = Objects.requireNonNull(httpRequest.getHeaders().get(HttpHeaders.AUTHORIZATION)).get(0);
             String jwtToken = authorizationHeader.replace("Bearer", "");
             if(!validateJwtToken(jwtToken)){
-                return onError(exchange, "Jwt token is invalid", HttpStatus.UNAUTHORIZED);
+                return onError(exchange, "Jwt token is invalid");
             }
 
             return chain.filter(exchange);
@@ -42,19 +43,21 @@ public class JwtTokenValidationFilter extends AbstractGatewayFilterFactory<JwtTo
     }
 
     private boolean validateJwtToken(String jwtToken) {
-        String userId = Jwts.parser()
-                .setSigningKey(environment.getProperty("jwt.secret.salt"))
-                .parseClaimsJws(jwtToken)
-                .getBody().getSubject();
-        if(Optional.ofNullable(userId).isPresent()){
-            return true;
+        String userId;
+        try{
+            userId= Jwts.parser()
+                    .setSigningKey(environment.getProperty("jwt.secret.salt"))
+                    .parseClaimsJws(jwtToken)
+                    .getBody().getSubject();
+        }catch(Exception ex){
+            return false;
         }
-        return false;
+        return Optional.ofNullable(userId).isPresent();
     }
 
-    private Mono<Void> onError(ServerWebExchange exchange, String errorMessage, HttpStatus httpStatus) {
+    private Mono<Void> onError(ServerWebExchange exchange, String errorMessage) {
         ServerHttpResponse response = exchange.getResponse();
-        response.setStatusCode(httpStatus);
+        response.setStatusCode(HttpStatus.UNAUTHORIZED);
         return response.setComplete();
     }
 
