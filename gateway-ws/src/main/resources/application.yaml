@@ -52,8 +52,8 @@ spring:
           - Path=/accounts-ws/**
           - Method=GET,PUT,POST
           filters:
-          - RemoveRequestHeader=Cookie
-          - RewritePath=/accounts-ws/(?<segment>.*), /$\{segment}
+            - RemoveRequestHeader=Cookie
+            - RewritePath=/accounts-ws/(?<segment>.*), /$\{segment}
 
       discovery:
         locator:
@@ -63,6 +63,11 @@ spring:
       enabled: true
   config:
     import: optional:configserver:http://localhost:8888
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: admin
+    password: admin
 
 eureka:
   client:
