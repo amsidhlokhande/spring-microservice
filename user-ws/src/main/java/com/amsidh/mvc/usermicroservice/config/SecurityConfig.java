@@ -9,9 +9,6 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @RequiredArgsConstructor
@@ -26,13 +23,20 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+        //Disable CSRF attack
         http.csrf().disable();
-        log.info(String.format("Gateway IP Address %s is allowed to access users-ws", environment.getProperty("gateway.ip.address")));
-        http.authorizeRequests().antMatchers("/**")
-                .hasIpAddress(environment.getProperty("gateway.ip.address"))
-                .and().addFilter(getAuthenticationFilter());
         //Allow H2 Console web access
         http.headers().frameOptions().disable();
+
+
+        log.info(String.format("Gateway IP Address %s is allowed to access users-ws", environment.getProperty("gateway.ip.address")));
+        http.authorizeRequests()
+                .antMatchers("/**")
+                .hasIpAddress(environment.getProperty("gateway.ip.address"))
+                .anyRequest().authenticated()
+                .and()
+                .addFilter(getAuthenticationFilter());
+
     }
 
     private AuthFilter getAuthenticationFilter() throws Exception {

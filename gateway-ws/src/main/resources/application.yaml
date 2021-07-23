@@ -1,5 +1,18 @@
 server:
   port: ${PORT:8080}
+
+info:
+  app:
+    name: @project.artifactId@
+    version: @project.version@
+    encoding: @project.build.sourceEncoding@
+    java:
+      source: @java.version@
+      target: @java.version@
+    developer:
+      name: Amsidh Lokhande
+      emailId: amsidhlokhande@gmail.com
+
 spring:
   application:
     name: gateway-ws
@@ -46,6 +59,22 @@ spring:
           - JwtTokenValidationFilter
           - RewritePath=/users-ws/(?<segment>.*), /$\{segment}
 
+        - id: users-ws-h2-console
+          uri: lb://users-ws
+          predicates:
+            - Path=/users-ws/h2-console**
+          filters:
+            - RemoveRequestHeader=Cookie
+            - RewritePath=/users-ws/(?<segment>.*), /$\{segment}
+
+        - id: users-ws-swagger-ui
+          uri: lb://users-ws
+          predicates:
+            - Path=/users-ws/swagger-ui.html,/users-ws/actuator/**
+          filters:
+            - RemoveRequestHeader=Cookie
+            - RewritePath=/users-ws/(?<segment>.*), /$\{segment}
+
         - id: accountsModule
           uri: lb://accounts-ws
           predicates:
@@ -55,24 +84,32 @@ spring:
             - RemoveRequestHeader=Cookie
             - RewritePath=/accounts-ws/(?<segment>.*), /$\{segment}
 
-      discovery:
-        locator:
-          lower-case-service-id: true
-  devtools:
-    restart:
-      enabled: true
+#Moved to central config location gateway-ws.properties file
+#      discovery:
+#        locator:
+#          lower-case-service-id: true
+
+#Moved to central config server application.properties
+#Devtool Properties
+#  devtools:
+#    restart:
+#      enabled: true
+
   config:
     import: optional:configserver:http://localhost:8888
-  rabbitmq:
-    host: localhost
-    port: 5672
-    username: admin
-    password: admin
 
-eureka:
-  client:
-    service-url:
-      defaultZone: http://localhost:8010/eureka
+#Moved to central config server location application.properties
+#RabbitMQ Configuration
+#  rabbitmq:
+#    host: localhost
+#    port: 5672
+#    username: admin
+#    password: admin
+
+#eureka:
+#  client:
+#    service-url:
+#      defaultZone: http://localhost:8010/eureka
 
 #jwt:
 #  secret:
