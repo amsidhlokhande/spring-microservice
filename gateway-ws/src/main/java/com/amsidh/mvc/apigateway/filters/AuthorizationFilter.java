@@ -16,11 +16,11 @@ import java.util.Objects;
 import java.util.Optional;
 
 @Component
-public class JwtTokenValidationFilter extends AbstractGatewayFilterFactory<JwtTokenValidationFilter.Config> {
+public class AuthorizationFilter extends AbstractGatewayFilterFactory<AuthorizationFilter.Config> {
 
     private final Environment environment;
 
-    public JwtTokenValidationFilter(Environment environment) {
+    public AuthorizationFilter(Environment environment) {
         super(Config.class);
         this.environment = environment;
     }

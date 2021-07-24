@@ -1,3 +1,4 @@
+
 server:
   port: ${PORT:8080}
 
@@ -45,7 +46,7 @@ spring:
           - Header=Authorization, Bearer (.*)
           filters:
           - RemoveRequestHeader=Cookie
-          - JwtTokenValidationFilter
+          - AuthorizationFilter
           - RewritePath=/users-ws/(?<segment>.*), /$\{segment}
 
         - id: users-ws-put-delete
@@ -56,13 +57,13 @@ spring:
           - Header=Authorization, Bearer (.*)
           filters:
           - RemoveRequestHeader=Cookie
-          - JwtTokenValidationFilter
+          - AuthorizationFilter
           - RewritePath=/users-ws/(?<segment>.*), /$\{segment}
 
         - id: users-ws-h2-console
           uri: lb://users-ws
           predicates:
-            - Path=/users-ws/h2-console**
+            - Path=/users-ws/h2-console/**
           filters:
             - RemoveRequestHeader=Cookie
             - RewritePath=/users-ws/(?<segment>.*), /$\{segment}
