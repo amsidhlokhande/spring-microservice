@@ -8,16 +8,22 @@ import com.amsidh.mvc.usermicroservice.shared.UserMapper;
 import com.amsidh.mvc.usermicroservice.shared.Utils;
 import com.amsidh.mvc.usermicroservice.ui.request.UserRequestModel;
 import com.amsidh.mvc.usermicroservice.ui.request.UserUpdateRequestModel;
+import com.amsidh.mvc.usermicroservice.ui.response.Album;
 import com.amsidh.mvc.usermicroservice.ui.response.UserResponseModel;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.core.env.Environment;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -35,6 +41,8 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final ObjectMapper objectMapper;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final RestTemplate restTemplate;
+    private final Environment environment;
 
     @Override
     public UserResponseModel createUser(UserRequestModel userRequestModel) {
@@ -51,8 +59,13 @@ public class UserServiceImpl implements UserService {
     public UserResponseModel getUserByUserId(String userId) {
         log.info("getUserByUserId method of UserServiceImpl is called");
         Objects.requireNonNull(userId, "UserId must not be null");
-        return ofNullable(userRepository.findByUserId(userId)).map(userEntity -> objectMapper.convertValue(userEntity, UserResponseModel.class))
+        UserResponseModel userResponseModel = ofNullable(userRepository.findByUserId(userId)).map(userEntity -> objectMapper.convertValue(userEntity, UserResponseModel.class))
                 .orElseThrow(() -> new UserException(String.format("User with userId %s not found", userId)));
+        String albumsUserUrl = String.format(environment.getProperty("albums-ws.get.users.albums"), userId);
+        ResponseEntity<List<Album>> responseEntity = restTemplate.exchange(albumsUserUrl, HttpMethod.GET, null, new ParameterizedTypeReference<List<Album>>() {
+        });
+       userResponseModel.setAlbums(responseEntity.getBody());
+        return userResponseModel;
     }
 
     @Override

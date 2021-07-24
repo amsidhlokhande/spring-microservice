@@ -85,6 +85,14 @@ spring:
             - RemoveRequestHeader=Cookie
             - RewritePath=/accounts-ws/(?<segment>.*), /$\{segment}
 
+        - id: albums-ws-get-albums-user
+          uri: lb://albums-ws
+          predicates:
+            - Path=Path=/albums-ws/users/{segment}/albums
+          filters:
+            - RemoveRequestHeader=Cookie
+            - RewritePath=/albums-ws/(?<segment>.*), /$\{segment}
+
 #Moved to central config location gateway-ws.properties file
 #      discovery:
 #        locator:
