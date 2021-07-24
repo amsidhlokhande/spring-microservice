@@ -29,10 +29,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.headers().frameOptions().disable();
 
 
-        log.info(String.format("Gateway IP Address %s is allowed to access users-ws", environment.getProperty("gateway.ip.address")));
+        log.info(String.format("Gateway IP Address %s is allowed to access users-ws", environment.getProperty("gateway.ip.address", "127.0.0.1/32")));
         http.authorizeRequests()
                 .antMatchers("/**")
-                .hasIpAddress(environment.getProperty("gateway.ip.address"))
+                .hasIpAddress(environment.getProperty("gateway.ip.address", "127.0.0.1/32"))
                 .anyRequest().authenticated()
                 .and()
                 .addFilter(getAuthenticationFilter());
@@ -42,7 +42,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private AuthFilter getAuthenticationFilter() throws Exception {
         AuthFilter authFilter = new AuthFilter(userService,environment);
         authFilter.setAuthenticationManager(authenticationManager());
-        authFilter.setFilterProcessesUrl(environment.getProperty("login.url.path"));
+        authFilter.setFilterProcessesUrl(environment.getProperty("login.url.path", "/users/login"));
         return authFilter;
     }
 
