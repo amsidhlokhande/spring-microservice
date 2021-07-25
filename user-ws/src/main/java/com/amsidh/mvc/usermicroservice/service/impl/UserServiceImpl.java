@@ -64,12 +64,7 @@ public class UserServiceImpl implements UserService {
         });
        userResponseModel.setAlbums(responseEntity.getBody());
          */
-        List<Album> albumsByUserId = null;
-        try {
-            albumsByUserId = albumFeignClient.getAlbumsByUserId(userId);
-        } catch (Exception exception) {
-            log.error(exception.getLocalizedMessage());
-        }
+        List<Album> albumsByUserId = albumFeignClient.getAlbumsByUserId(userId);
         userResponseModel.setAlbums(albumsByUserId);
         return userResponseModel;
     }
