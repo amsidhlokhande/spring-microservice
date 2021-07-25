@@ -3,6 +3,7 @@ package com.amsidh.mvc.usermicroservice.service.impl;
 import com.amsidh.mvc.usermicroservice.entity.UserEntity;
 import com.amsidh.mvc.usermicroservice.exception.UserException;
 import com.amsidh.mvc.usermicroservice.repository.UserRepository;
+import com.amsidh.mvc.usermicroservice.service.AlbumFeignClient;
 import com.amsidh.mvc.usermicroservice.service.UserService;
 import com.amsidh.mvc.usermicroservice.shared.UserMapper;
 import com.amsidh.mvc.usermicroservice.shared.Utils;
@@ -14,16 +15,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.env.Environment;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -41,8 +38,9 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final ObjectMapper objectMapper;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
-    private final RestTemplate restTemplate;
+    //private final RestTemplate restTemplate;
     private final Environment environment;
+    private final AlbumFeignClient albumFeignClient;
 
     @Override
     public UserResponseModel createUser(UserRequestModel userRequestModel) {
@@ -61,10 +59,18 @@ public class UserServiceImpl implements UserService {
         Objects.requireNonNull(userId, "UserId must not be null");
         UserResponseModel userResponseModel = ofNullable(userRepository.findByUserId(userId)).map(userEntity -> objectMapper.convertValue(userEntity, UserResponseModel.class))
                 .orElseThrow(() -> new UserException(String.format("User with userId %s not found", userId)));
-        String albumsUserUrl = String.format(environment.getProperty("albums-ws.get.users.albums"), userId);
+        /*String albumsUserUrl = String.format(environment.getProperty("albums-ws.get.users.albums"), userId);
         ResponseEntity<List<Album>> responseEntity = restTemplate.exchange(albumsUserUrl, HttpMethod.GET, null, new ParameterizedTypeReference<List<Album>>() {
         });
        userResponseModel.setAlbums(responseEntity.getBody());
+         */
+        List<Album> albumsByUserId = null;
+        try {
+            albumsByUserId = albumFeignClient.getAlbumsByUserId(userId);
+        } catch (Exception exception) {
+            log.error(exception.getLocalizedMessage());
+        }
+        userResponseModel.setAlbums(albumsByUserId);
         return userResponseModel;
     }
 
