@@ -15,9 +15,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
+import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -44,6 +47,8 @@ public class UserServiceImpl implements UserService {
     private final RestTemplateService restTemplateService;
     private final Environment environment;
 
+    private final CircuitBreakerFactory circuitBreakerFactory;
+
     @Override
     public UserResponseModel createUser(UserRequestModel userRequestModel) {
         log.debug("createUser method of UserServiceImpl is called");
@@ -63,8 +68,12 @@ public class UserServiceImpl implements UserService {
         UserResponseModel userResponseModel = ofNullable(userRepository.findByUserId(userId)).map(userEntity -> objectMapper.convertValue(userEntity, UserResponseModel.class))
                 .orElseThrow(() -> new UserException(String.format("User with userId %s not found", userId)));
         String albumsUserUrl = String.format(Objects.requireNonNull(environment.getProperty("albums-ws.get.users.albums")), userId);
-        ResponseEntity<?> responseEntity = restTemplateService.getResponseEntity(albumsUserUrl, HttpMethod.GET, null, new ParameterizedTypeReference<List<Album>>() {
-        });
+
+        CircuitBreaker circuitBreaker = circuitBreakerFactory.create("albums-circuit-breaker");
+
+        ResponseEntity responseEntity = circuitBreaker.run(() -> restTemplateService.getResponseEntity(albumsUserUrl, HttpMethod.GET, null, new ParameterizedTypeReference<List<Album>>() {
+        }), t -> new ResponseEntity<List<Album>>(HttpStatus.INTERNAL_SERVER_ERROR));
+
         List<Album> albumsList = responseEntity.getBody() != null ? (List<Album>) responseEntity.getBody() : new ArrayList<>();
         userResponseModel.setAlbums(albumsList);
         return userResponseModel;
