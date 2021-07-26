@@ -21,7 +21,7 @@ public class RestTemplateServiceImpl implements RestTemplateService {
 
     @Override
     public ResponseEntity<?> getResponseEntity(String url, HttpMethod httpMethod, HttpEntity<?> httpEntity, ParameterizedTypeReference<?> parameterizedTypeReference) {
-        log.info("Calling  {} attempt {}", url, attempt++);
+        log.info("Attempt {} for calling  {}",attempt++, url);
         ResponseEntity<?> responseEntity = restTemplate.exchange(url, httpMethod, httpEntity, parameterizedTypeReference);
         log.info("Response: {}" + responseEntity.getBody());
         return responseEntity;

@@ -28,8 +28,9 @@ public class AlbumController {
             MediaType.APPLICATION_JSON_VALUE,
             MediaType.APPLICATION_XML_VALUE})
     public ResponseEntity<List<AlbumResponseModel>> findAlbumsByUserId(@PathVariable("userId") String userId) {
+       log.info("Before calling AlbumService");
         List<AlbumResponseModel> albumResponseModelList = albumService.getAlbumsByUserId(userId).parallelStream().map(AlbumResponseModel::new).collect(Collectors.toList());
-        log.info("Album micro service is working on port " + environment.getProperty("local.server.port"));
+        log.info("After calling Album micro service is working on port " + environment.getProperty("local.server.port"));
         return ResponseEntity.ok(albumResponseModelList);
     }
 }
