@@ -16,6 +16,6 @@ public class AccountManagementController {
 
     @GetMapping("/status/check")
     public String statusCheck(){
-        return "Account Management MicroService Working on " + environment.getProperty("local.server.port");
+        return "Account Management MicroService Working on container port " + environment.getProperty("local.server.port");
     }
 }

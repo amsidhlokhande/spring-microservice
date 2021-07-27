@@ -30,7 +30,7 @@ public class UserController {
 
     @GetMapping("/status/check")
     public String statusCheck() {
-        return "Users Microservice is Working on port "+ environment.getProperty("local.server.port") + " and secret key is "+ environment.getProperty("jwt.secret.salt");
+        return "Users Microservice is Working on container port "+ environment.getProperty("local.server.port") + " and secret key is "+ environment.getProperty("jwt.secret.salt");
     }
 
     @GetMapping(path = {"/{userId}"}, produces = {APPLICATION_JSON_VALUE, APPLICATION_XML_VALUE})
