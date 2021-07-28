@@ -9,7 +9,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.amsidh.mvc</groupId>
-    <artifactId>album-ws</artifactId>
+    <artifactId>albums-ws</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>album-ws</name>
     <description>Demo project for Spring Boot</description>
