@@ -4,4 +4,4 @@ xpack:
   monitoring:
     elasticsearch:
       hosts:
-        - "http://54.172.104.60:9200"
+        - "http://18.117.245.36:9200"
